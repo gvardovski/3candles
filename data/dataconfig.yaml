@@ -1,0 +1,15 @@
+# Time interval of data
+Time interval:
+  Start_year: 2023
+  Start_month: 1
+  End_year: 2025
+  End_month: 12        
+
+# Place from which take data
+# Name of token which data you need
+Data info:
+  Exchange: OANDA
+  Token: EURUSD
+
+# Time frequency of the data 'minute', 'hour', 'day', 'week'
+Frequency: hour
