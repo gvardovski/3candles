@@ -1,0 +1,32 @@
+# Path to the data file *.csv
+Data_filename: data/EURUSD_hour.CSV
+
+# Length of the RSI period
+# overbought max value 100
+# oversold min value 0
+RSI:
+  length_start: 7
+  length_end: 21
+  length_step: 1
+  overbought: 70               
+  oversold: 30
+
+# size type: 'value' 'amount' 'percent'
+Trade:
+  size: 1
+  size_type: amount
+
+# Fees for one amount of trade in percent
+# Fixed fees for one trade in currency units
+Broker:
+  fees: 0.0003
+  fixed_fees: 0
+
+# Slippage in percent
+Slippage: 0.02
+
+# Start cash value
+Initial_cash: 55000
+
+# Time frequency of the data '1m', '1h', '1d', '1w', '1M'
+Frequency: 1h

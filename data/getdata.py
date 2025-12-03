@@ -5,10 +5,10 @@ import os
 import requests
 import yaml
 import sys
-import time as time_
+import time as wait
 import pandas as pd
 
-def check_if_config_file_exist(path):
+def check_if_config_file_exist(path, flag):
     if os.path.exists(path):
         print(f"Found your Configuration file \'{path}\'!")
     else:
@@ -21,23 +21,32 @@ def check_if_config_file_exist(path):
                 sys.exit("\nCreate your Configuration file \'{path}\' and try once more time!")
             elif choise == "Y":
                 with open(path, "w") as file:
-                    file.write("# Time interval of data\nTime interval:\n" +
-                    "  Start_year: 2020\n  Start_month: 1\n  End_year: 2025\n  End_month: 12\n\n" +
-                    "# Place from which take data\n# Name of token which data you need\nData info:\n  Exchange: OANDA\n  Token: EURUSD\n\n" +
-                    "# Time frequency of the data 'minute', 'hour', 'day', 'week'\nFrequency: hour")
+                    if flag == 1:
+                        msg = ("# Time interval of data\nTime interval:\n" +
+                        "  Start_year: 2020\n  Start_month: 1\n  End_year: 2025\n  End_month: 12\n\n" +
+                        "# Place from which take data\n# Name of token which data you need\nData info:\n  Exchange: OANDA\n  Token: EURUSD\n\n" +
+                        "# Time frequency of the data 'minute', 'hour', 'day', 'week'\nFrequency: hour")
+                    else:
+                        msg = ("# Path to the data file *.csv\nData_filename: ???.csv\n\n" +
+                        "# Length of the RSI period\n# overbought max value 100\n# oversold min value 0\n" +
+                        "RSI:\n  length_start: 7\n  length_end: 21\n  length_step: 1\n  overbought: 70\n  oversold: 30\n\n" +
+                        "# size type: 'value' 'amount' 'percent'\nTrade:\n  size: 1\n  size_type: amount\n\n" +
+                        "# Fees for one amount of trade in percent\n# Fixed fees for one trade in currency units\nBroker:\n  fees: 0.0003\n  fixed_fees: 0\n\n" +
+                        "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n\n# Time frequency of the data '1m', '1h', '1d', '1w', '1M'\nFrequency: 1h")
+                    file.write(msg)
             else:
                 type_choise()
         type_choise()
 
-def check_config(config):
+def check_dataconfig(data_config):
     try:
-        start_year = config['Time interval']['Start_year']
-        start_month = config['Time interval']['Start_month']
-        end_year = config['Time interval']['End_year']
-        end_month = config['Time interval']['End_month']
-        exchange = config['Data info']['Exchange']
-        token = config['Data info']['Token']
-        freq = config['Frequency']
+        start_year = data_config['Time interval']['Start_year']
+        start_month = data_config['Time interval']['Start_month']
+        end_year = data_config['Time interval']['End_year']
+        end_month = data_config['Time interval']['End_month']
+        exchange = data_config['Data info']['Exchange']
+        token = data_config['Data info']['Token']
+        freq = data_config['Frequency']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
     if not isinstance(start_year, int) or not isinstance(start_month, int) or not isinstance(end_year, int) or not isinstance(end_month, int):
@@ -56,12 +65,12 @@ def check_config(config):
     if freq not in ['second', 'minute', 'hour', 'day', 'week', 'month', 'year']:
         exit("Frequency must be a string like ('second', 'minute', 'hour').")
 
-def take_months(config):
+def take_months(data_config):
     months = []
-    start_year = config['Time interval']['Start_year']
-    start_month = config['Time interval']['Start_month']
-    end_year = config['Time interval']['End_year']
-    end_month = config['Time interval']['End_month']
+    start_year = data_config['Time interval']['Start_year']
+    start_month = data_config['Time interval']['Start_month']
+    end_year = data_config['Time interval']['End_year']
+    end_month = data_config['Time interval']['End_month']
 
     while start_year <= end_year and start_month <= end_month:
         months.append(f"{start_year}-{start_month:02d}")
@@ -71,13 +80,13 @@ def take_months(config):
             start_year += 1
     return months
 
-def get_data_from_api(config):
-    months = take_months(config)
+def get_data_from_api(data_config):
+    months = take_months(data_config)
     df = None
 
-    exchange = config['Data info']['Exchange']
-    token = config['Data info']['Token']
-    freq = config['Frequency']
+    exchange = data_config['Data info']['Exchange']
+    token = data_config['Data info']['Token']
+    freq = data_config['Frequency']
     print("Start loading data!")
     for month in tqdm(months):
         url = f"https://api.insightsentry.com/v3/symbols/{exchange}:{token}/history?bar_interval=1&bar_type={freq}&extended=false&badj=false&dadj=false&start_ym={month}"
@@ -98,31 +107,33 @@ def get_data_from_api(config):
                 else:
                     df = pd.concat([df, df_month], ignore_index=True)
                 success = True
-                time_.sleep(0.5)
+                wait.sleep(0.5)
             else:
                 print(f"Request failed for month {month} with status code {response.status_code}")
                 try:
                     print(response.json())
                 except Exception:
                     print(response.text)
-                print("Retrying in 30 seconds...")
-                time_.sleep(30)
+                print("Retrying in 10 seconds...")
+                wait.sleep(10)
     return df
 
-if __name__ == "__main__":
-
+def make_csv():
     load_dotenv()  
-    data_config = os.getenv('3CANDLES_DATA_CONFIG_PATH')
+    data_config_path = os.getenv('3CANDLES_DATA_CONFIG_PATH')
 
-    check_if_config_file_exist(data_config)
-    with open(data_config, "r") as file:
-        config = yaml.safe_load(file)
-        check_config(config)
+    check_if_config_file_exist(data_config_path, 1)
+    with open(data_config_path, "r") as file:
+        data_config = yaml.safe_load(file)
+        check_dataconfig(data_config)
 
-    df = get_data_from_api(config)
+    df = get_data_from_api(data_config)
 
     df["time"] = pd.to_datetime(df["time"], unit="s", utc=True)
     df = df.rename(columns={"time": "Time", "open": "Open", "high": "High", "low": "Low", "close": "Close", "volume": "Volume"})
     df = df.set_index("Time")
 
-    df.to_csv("data/EURUSD.CSV")
+    csv_file_path = f"data/{data_config['Data info']['Token']}_{data_config['Frequency']}.CSV"
+    df.to_csv(csv_file_path)
+    print(f"CSV file '{csv_file_path}' was created!")
+    return csv_file_path
