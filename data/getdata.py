@@ -28,8 +28,6 @@ def check_if_config_file_exist(path, flag):
                         "# Time frequency of the data 'minute', 'hour', 'day', 'week'\nFrequency: hour")
                     else:
                         msg = ("# Path to the data file *.csv\nData_filename: ???.csv\n\n" +
-                        "# Length of the RSI period\n# overbought max value 100\n# oversold min value 0\n" +
-                        "RSI:\n  length_start: 7\n  length_end: 21\n  length_step: 1\n  overbought: 70\n  oversold: 30\n\n" +
                         "# size type: 'value' 'amount' 'percent'\nTrade:\n  size: 1\n  size_type: amount\n\n" +
                         "# Fees for one amount of trade in percent\n# Fixed fees for one trade in currency units\nBroker:\n  fees: 0.0003\n  fixed_fees: 0\n\n" +
                         "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n\n# Time frequency of the data '1m', '1h', '1d', '1w', '1M'\nFrequency: 1h")
