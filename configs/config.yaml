@@ -12,6 +12,9 @@ Broker:
   fees: 0
   fixed_fees: 0
 
+# Risk to Reward ratio
+RR: 2
+
 # Slippage in percent
 Slippage: 0
 

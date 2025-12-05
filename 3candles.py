@@ -9,6 +9,7 @@ import numpy as np
 
 def check_config(config):
     try:
+        csv_file_name = config['Data_filename']
         size = config['Trade']['size']
         size_type = config['Trade']['size_type']
         fees = config['Broker']['fees']
@@ -16,12 +17,17 @@ def check_config(config):
         slippage = config['Slippage']
         init_cash = config['Initial_cash']
         freq = config['Frequency']
+        rr = config['RR']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
+    if csv_file_name.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(csv_file_name, str):
+        exit("Data_filename must be a string with .CSV extension.")
     if size <= 0 or not isinstance(size, (int, float)):
         exit("Trade size must be a positive number.")
     if size_type not in ['amount', 'percent', 'value']:
         exit("Trade size_type must be either 'amount' 'percent' or 'value'.")
+    if rr <= 0 or not isinstance(rr, (int, float)):
+        exit("RR must be a positive number.")
     if not isinstance(fees, (int, float)) or not isinstance(fixed_fees, (int, float)):
         exit("Broker fees must be a number.")
     if not (0 <= fees <= 100):
@@ -73,8 +79,8 @@ if __name__ == "__main__":
     df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] #short
     df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] #long
 
-    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - (df_hour['Close'] - df_hour['Close'].shift(2)) #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * -1) #long
+    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * config['RR']) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * config['RR'])#long
 
     index_arr_hour = df_hour.index.to_numpy()
     open_arr_hour = df_hour['Open'].to_numpy()
