@@ -1,4 +1,4 @@
-from data import getdata
+from getdata import make_csv, check_if_config_file_exist
 from dotenv import load_dotenv
 from typing import Optional
 import os
@@ -18,7 +18,7 @@ def check_config(config):
         freq = config['Frequency']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
-    if size <= 0 or not isinstance(size, int):
+    if size <= 0 or not isinstance(size, (int, float)):
         exit("Trade size must be a positive number.")
     if size_type not in ['amount', 'percent', 'value']:
         exit("Trade size_type must be either 'amount' 'percent' or 'value'.")
@@ -40,7 +40,7 @@ def check_if_csv_file_exist(config):
         print("Found your Data file!")
     else:
         print(f"Your CSV file '{config['Data_filename']}' doesn't exist!\nCSV file '{config['Data_filename']}' will be created automatically!")
-        config['Data_filename'] = getdata.make_csv()
+        config['Data_filename'] = make_csv()
     return config
 
 if __name__ == "__main__":
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     config_path = os.getenv('3CANDLES_CONFIG_PATH')
-    getdata.check_if_config_file_exist(config_path, 2)
+    check_if_config_file_exist(config_path, 2)
 
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
@@ -59,25 +59,22 @@ if __name__ == "__main__":
     df_hour = df_hour.set_index('Time')
     df_hour.index = pd.to_datetime(df_hour.index)
     
-    df_hour = df_hour.drop(columns=['Volume'])
+    df_hour = df_hour.drop(columns=['Volume', 'High', 'Low'])
     df_hour['Dir'] = 0
+
     df_hour.loc[df_hour['Close'] > df_hour['Open'], 'Dir'] = 1
-    bull_entry_mask = ((df_hour['Dir'] == 1) & (df_hour['Dir'].shift(1) == 1) & (df_hour['Dir'].shift(2) == 1) &
+    bull_entry_mask = ((df_hour['Dir'] == 1) & (df_hour['Dir'].shift(1) == 1) & (df_hour['Dir'].shift(2) == 1) & #short
                        (df_hour['Close'].shift(2) < df_hour['Open']))
     df_hour['Bull Entry'] = bull_entry_mask
-    bear_entry_mask = ((df_hour['Dir'] == 0) & (df_hour['Dir'].shift(1) == 0) & (df_hour['Dir'].shift(2) == 0) &
+    bear_entry_mask = ((df_hour['Dir'] == 0) & (df_hour['Dir'].shift(1) == 0) & (df_hour['Dir'].shift(2) == 0) & #long
                        (df_hour['Close'].shift(2) > df_hour['Open']))
     df_hour['Bear Entry'] = bear_entry_mask
 
-    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'].shift(2)
-    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'].shift(2)
+    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] #long
 
-    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['SL']) * -1)
-    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + (df_hour['Close'] - df_hour['SL'])
-
-    # print(df_hour[df_hour['Bull Entry'] == True])
-    # print(df_hour[df_hour['Bear Entry'] == True])
-    # print(df_hour)
+    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - (df_hour['Close'] - df_hour['Close'].shift(2)) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * -1) #long
 
     index_arr_hour = df_hour.index.to_numpy()
     open_arr_hour = df_hour['Open'].to_numpy()
@@ -112,34 +109,24 @@ if __name__ == "__main__":
                 continue  
 
         elif trade_direct == 'bull':
-            close = False
-            close_price = None
 
-            if close_arr_hour[i] < cur_sl:
-                close = True
-                close_price = cur_sl
-            elif close_arr_hour[i] > cur_tp:
-                close = True
-                close_price = cur_tp
-
-            if close:
-                price_arr_hour[i] = close_price
+            if close_arr_hour[i] >= cur_sl:
+                price_arr_hour[i] = cur_sl
+                trade_direct, cur_sl, cur_tp = None, None, None
+                bull_exit_arr_hour[i] = True
+            elif close_arr_hour[i] <= cur_tp:
+                price_arr_hour[i] = cur_tp
                 trade_direct, cur_sl, cur_tp = None, None, None
                 bull_exit_arr_hour[i] = True
 
         elif trade_direct == 'bear':
-            close = False
-            close_price = None
 
-            if close_arr_hour[i] > cur_sl:
-                close = True
-                close_price = cur_sl
-            elif close_arr_hour[i] < cur_tp:
-                close = True
-                close_price = cur_tp
-
-            if close:
-                price_arr_hour[i] = close_price
+            if close_arr_hour[i] <= cur_sl:
+                price_arr_hour[i] = cur_sl
+                trade_direct, cur_sl, cur_tp = None, None, None
+                bear_exit_arr_hour[i] = True
+            elif close_arr_hour[i] >= cur_tp:
+                price_arr_hour[i] = cur_tp
                 trade_direct, cur_sl, cur_tp = None, None, None
                 bear_exit_arr_hour[i] = True
 
@@ -151,8 +138,6 @@ if __name__ == "__main__":
     price = price_arr_hour,
     open = df_hour["Open"],
     close = df_hour["Close"],
-    high = df_hour["High"],
-    low = df_hour["Low"],
     size = config['Trade']['size'],
     size_type = config['Trade']['size_type'],
     fees = config['Broker']['fees'],
@@ -162,4 +147,8 @@ if __name__ == "__main__":
     freq = config['Frequency']
     )
 
-    print(pf.stats())
+    file_path = config['Data_filename'].split('.')[0]
+    pf.stats().to_csv(f"{file_path}_stats.CSV")
+    print(f"CSV file with statistics '{f"{file_path}_stats.CSV"}' was created!")
+    pf.trades.records_readable.to_csv(f"{file_path}_trades.CSV")
+    print(f"CSV file with trades '{f"{file_path}_trades.CSV"}' was created!")

@@ -1,22 +1,22 @@
 # Path to the data file *.csv
-Data_filename: data/EURUSD_hour.CSV
+Data_filename: data/OANDA:EURUSD_hour.CSV
 
 # size type: 'value' 'amount' 'percent'
 Trade:
-  size: 1
-  size_type: amount
+  size: 0.3
+  size_type: percent
 
 # Fees for one amount of trade in percent
 # Fixed fees for one trade in currency units
 Broker:
-  fees: 0.0003
+  fees: 0
   fixed_fees: 0
 
 # Slippage in percent
-Slippage: 0.02
+Slippage: 0
 
 # Start cash value
-Initial_cash: 55000
+Initial_cash: 50000
 
 # Time frequency of the data '1m', '1h', '1d', '1w', '1M'
 Frequency: 1h

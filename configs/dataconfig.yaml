@@ -12,4 +12,4 @@ Data info:
   Token: EURUSD
 
 # Time frequency of the data 'minute', 'hour', 'day', 'week'
-Frequency: minute
+Frequency: hour

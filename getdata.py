@@ -131,7 +131,7 @@ def make_csv():
     df = df.rename(columns={"time": "Time", "open": "Open", "high": "High", "low": "Low", "close": "Close", "volume": "Volume"})
     df = df.set_index("Time")
 
-    csv_file_path = f"data/{data_config['Data info']['Token']}_{data_config['Frequency']}.CSV"
+    csv_file_path = f"data/{data_config['Data info']['Exchange']}:{data_config['Data info']['Token']}_{data_config['Frequency']}.CSV"
     df.to_csv(csv_file_path)
     print(f"CSV file '{csv_file_path}' was created!")
     return csv_file_path
