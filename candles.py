@@ -1,4 +1,4 @@
-from getdata import make_csv, check_if_config_file_exist
+from getdata import make_csv, check_if_config_file_exist, check_env_varailable
 from dotenv import load_dotenv
 from typing import Optional
 import os
@@ -49,11 +49,19 @@ def check_if_csv_file_exist(config):
         config['Data_filename'] = make_csv()
     return config
 
+def check_if_env_file_exist():
+    if not os.path.exists('.env'):
+        print(f"Your '.env' file doesn't exist!\nIt will be created automatically!")
+        with open('.env', 'w') as file:
+            msg = ("IS_JWT_USER=\nIS_JWT=\n3CANDLES_DATA_CONFIG_PATH=configs/dataconfig.yaml\n3CANDLES_CONFIG_PATH=configs/config.yaml")
+            file.write(msg)
+
 if __name__ == "__main__":
 
+    check_if_env_file_exist()
     load_dotenv()
 
-    config_path = os.getenv('3CANDLES_CONFIG_PATH')
+    config_path = check_env_varailable('3CANDLES_CONFIG_PATH')
     check_if_config_file_exist(config_path, 2)
 
     with open(config_path, 'r') as file:

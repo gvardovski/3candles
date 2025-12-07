@@ -6,7 +6,7 @@ authors = [
     {name = "gvardovski",email = "gvardovski@icloud.com"}
 ]
 readme = "README.md"
-requires-python = "3.13.3"
+requires-python = "3.13.7"
 dependencies = [
     "pandas (>=2.3.3,<3.0.0)",
     "vectorbt (>=0.28.1,<0.29.0)",

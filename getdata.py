@@ -90,7 +90,7 @@ def get_data_from_api(data_config):
         url = f"https://api.insightsentry.com/v3/symbols/{exchange}:{token}/history?bar_interval=1&bar_type={freq}&extended=false&badj=false&dadj=false&start_ym={month}"
 
         headers = {
-            "Authorization" : f"Bearer {os.getenv("IS_JWT")}",
+            "Authorization" : f"{check_env_varailable('IS_JWT_USER')} {check_env_varailable('IS_JWT')}",
             "Accept" : "application/json"
         }
 
@@ -116,9 +116,17 @@ def get_data_from_api(data_config):
                 wait.sleep(10)
     return df
 
+def check_env_varailable(var_name):
+    if os.getenv(var_name) is None or os.getenv(var_name) == "":
+        exit(f"Environment variable '{var_name}' is not set. Please set it in your '.env file.")
+    else:
+        return os.getenv(var_name)
+
 def make_csv():
+
     load_dotenv()  
-    data_config_path = os.getenv('3CANDLES_DATA_CONFIG_PATH')
+
+    data_config_path = check_env_varailable('3CANDLES_DATA_CONFIG_PATH')
 
     check_if_config_file_exist(data_config_path, 1)
     with open(data_config_path, "r") as file:
