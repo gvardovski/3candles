@@ -16,7 +16,6 @@ def check_config(config):
         fixed_fees = config['Broker']['fixed_fees']
         slippage = config['Slippage']
         init_cash = config['Initial_cash']
-        freq = config['Frequency']
         rr = config['RR']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
@@ -38,8 +37,6 @@ def check_config(config):
         exit("Slippage must be a non-negative number.")
     if init_cash < 0 or not isinstance(slippage, (int, float)):
         exit("Initial_cash must be a non-negative number.")
-    if not isinstance(freq, str):
-        exit("Frequency must be a string like ('1h', '15min').")
 
 def check_if_csv_file_exist(config):
     if os.path.exists(config['Data_filename_hour']):
@@ -84,9 +81,9 @@ def make_backtest_hour():
                        (df_hour['Close'].shift(2) > df_hour['Open']))
     df_hour['Bear Entry'] = bear_entry_mask
 
-    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] #long
-
+    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * 0.5)) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] - ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * 0.5))#long
+    
     df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * config['RR']) #short
     df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * config['RR'])#long
 
@@ -158,7 +155,7 @@ def make_backtest_hour():
     fixed_fees = config['Broker']['fixed_fees'],
     slippage = config['Slippage'],
     init_cash = config['Initial_cash'],
-    freq = config['Frequency']
+    freq = '1h'
     )
 
     file_path = config['Data_filename_hour'].split('.')[0]

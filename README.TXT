@@ -31,7 +31,7 @@
 6. **Run the Program**  
    Execute:
    ```bash
-   poetry run python3 3candles.py
+   poetry run python3 main.py
    ```
 
 ## Installation Process (Windows)
@@ -74,5 +74,5 @@ IS_JWT=
 6. **Run the Program**  
    Execute:
    ```powershell
-   poetry run python 3candles.py
+   poetry run python main.py
    ```

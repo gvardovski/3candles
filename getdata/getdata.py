@@ -30,7 +30,7 @@ def check_if_config_file_exist(path, flag):
                         msg = ("# Path to the data files *.CSV\nData_filename_hour: ???.csv\nData_filename_minute: ???.csv\n\n" +
                         "# size type: 'value' 'amount' 'percent'\nTrade:\n  size: 1\n  size_type: amount\n\n" +
                         "# Fees for one amount of trade in percent\n# Fixed fees for one trade in currency units\nBroker:\n  fees: 0.0003\n  fixed_fees: 0\n\n" +
-                        "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n\n# Time frequency of the data '1m', '1h', '1d', '1w', '1M'\nFrequency: 1h")
+                        "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n")
                     file.write(msg)
             else:
                 type_choise()

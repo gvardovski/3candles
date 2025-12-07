@@ -21,6 +21,3 @@ Slippage: 0
 
 # Start cash value
 Initial_cash: 50000
-
-# Time frequency of the data '1m', '1h', '1d', '1w', '1M'
-Frequency: 1h

@@ -1,6 +1,7 @@
 import sys
 from getdata.getdata import make_csv
 from backtesting.candles_hour import make_backtest_hour
+from backtesting.candles_minute import make_backtest_minute
 
 def user_make_decision():
     decision = input(
@@ -13,7 +14,7 @@ def user_make_decision():
     elif decision == "2":
         make_backtest_hour()
     elif decision == "3":
-        pass
+        make_backtest_minute()
     elif decision == "4":
         sys.exit("\nBye Bye!")
     user_make_decision()
