@@ -1,6 +1,7 @@
 from getdata.getdata import make_csv, check_if_config_file_exist, check_env_varailable
 from dotenv import load_dotenv
 from typing import Optional
+from src.savetopdf import save_backtesting_results_to_pdf
 import os
 import yaml
 import pandas as pd
