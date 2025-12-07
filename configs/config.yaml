@@ -1,5 +1,6 @@
-# Path to the data file *.csv
-Data_filename: data/OANDA:EURUSD_hour.CSV
+# Path to the data files *.CSV
+Data_filename_hour: data/OANDA:EURUSD_hour.CSV
+Data_filename_minute: data/OANDA:EURUSD_minute.CSV
 
 # size type: 'value' 'amount' 'percent'
 Trade:
