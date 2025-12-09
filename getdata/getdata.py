@@ -28,10 +28,10 @@ def check_if_config_file_exist(path, flag):
                         "# Time frequency of the data 'minute', 'hour', 'day', 'week'\nFrequency: hour")
                     else:
                         msg = ("# Path to the data files *.CSV\nData_filename_hour: ???.csv\nData_filename_minute: ???.csv\n\n" +
-                        "# Timeframe for backtesting 'year-month-day'\nBacktesting_dates:\n  start: '2020-01-01'\n  end: '2020-12-31'\n\n" +
+                        "# Timeframe for backtesting 'year-month-day'\nBacktesting_dates:\n  start: '2025-01-01'\n  end: '2025-12-03'\n\n" +
                         "# size type: 'value' 'amount' 'percent'\nTrade:\n  size: 1\n  size_type: amount\n\n" +
-                        "# Fees for one amount of trade in percent\n# Fixed fees for one trade in currency units\nBroker:\n  fees: 0.0003\n  fixed_fees: 0\n\n" +
-                        "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n\n" +
+                        "# Fees for one amount of trade in percent\n# Fixed fees for one trade in currency units\nBroker:\n  fees: 0\n  fixed_fees: 0\n\n" +
+                        "# Slippage in percent\nSlippage: 0.0\n\n# Start cash value\nInitial_cash: 55000\n\n" +
                         "# Risk to Reward ratio\nRR: 1\n\n# Stop Loss in percent. Depends on the RR. 1 is 100% of RR\nSL: 0.5\n\n" +
                         "# Take Profit in percent. Depends on the RR. 1 is 100% of RR\nTP: 1\n\n" +
                         "# Timeframe to open trades 'hour:minute'\n# Only for backtesting on minute candles\nTrading_time:\n  Start_time: '9:00'\n  End_time: '17:00'")
