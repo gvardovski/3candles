@@ -15,10 +15,10 @@ def check_config(config, flag):
             CSV_FILE_NAME_MIN = config['Data_filename_minute']
             if CSV_FILE_NAME_MIN == None or CSV_FILE_NAME_MIN.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(CSV_FILE_NAME_MIN, str):
                 exit("Data_filename_minute must be a string with .CSV extension.")
-        SIZE = config['Trade']['SIZE']
-        SIZE_TYPE = config['Trade']['SIZE_TYPE']
-        FEES = config['Broker']['FEES']
-        FIXED_FEES = config['Broker']['FIXED_FEES']
+        SIZE = config['Trade']['size']
+        SIZE_TYPE = config['Trade']['size_type']
+        FEES = config['Broker']['fees']
+        FIXED_FEES = config['Broker']['fixed_fees']
         SLIPPAGE = config['Slippage']
         INIT_CASH = config['Initial_cash']
         RR = config['RR']

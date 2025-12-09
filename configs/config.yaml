@@ -31,5 +31,5 @@ TP: 1
 # Timeframe to open trades 'hour:minute'
 # Only for backtesting on minute candles
 Trading_time:
-  Start_time: '8:30'
-  End_time: '16:45'
+  Start_time: '00:00'
+  End_time: '23:59'
