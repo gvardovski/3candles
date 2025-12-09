@@ -3,7 +3,7 @@ from backtesting.candles_hour import check_if_env_file_exist, check_config, chec
 from src.savetopdf import save_backtesting_results_to_pdf
 from dotenv import load_dotenv
 from typing import Optional
-import os
+from datetime import time
 import yaml
 import pandas as pd
 import vectorbt as vbt
@@ -55,6 +55,9 @@ def make_backtest_minute():
     df_min['Date and hour'] = df_min.index.floor('h')
     df_min.dropna(inplace=True)
 
+    trading_start_time = time(int(config['Trading_time']['Start_time'].split(':')[0]),int(config['Trading_time']['Start_time'].split(':')[1]))
+    trading_end_time = time(int(config['Trading_time']['End_time'].split(':')[0]),int(config['Trading_time']['End_time'].split(':')[1]))
+
     index_arr_min = df_min.index.to_numpy()
     close_arr_min = df_min['Close'].to_numpy()
     bull_entry_arr_min = df_min['Bull Entry'].to_numpy()
@@ -62,6 +65,7 @@ def make_backtest_minute():
     sl_arr_min = df_min['SL'].to_numpy()
     tp_arr_min = df_min['TP'].to_numpy()
     date_and_hour_arr_min = df_min['Date and hour'].to_numpy()
+    candle_time_arr_min = df_min.index.time
     price_arr_min = np.full(len(index_arr_min), np.nan)
     bull_entrymask_arr_min = np.full(len(index_arr_min), False)
     bear_entrymask_arr_min = np.full(len(index_arr_min), False)
@@ -74,6 +78,9 @@ def make_backtest_minute():
 
     for i in range(len(index_arr_min)):
         if trade_direct is None:
+            if not (trading_start_time <= candle_time_arr_min[i] <= trading_end_time):
+                continue
+
             date_and_hour = date_and_hour_arr_min[i]
 
             if bull_entry_arr_min[i] and opened_date_and_hour.get(date_and_hour) == None:

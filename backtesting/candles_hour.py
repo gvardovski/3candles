@@ -12,33 +12,35 @@ def check_config(config, flag):
     try:
         CSV_FILE_NAME = config['Data_filename_hour']
         if flag == 2:
-            csv_file_name_min = config['Data_filename_minute']
-            if csv_file_name_min == None or csv_file_name_min.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(csv_file_name_min, str):
+            CSV_FILE_NAME_MIN = config['Data_filename_minute']
+            if CSV_FILE_NAME_MIN == None or CSV_FILE_NAME_MIN.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(CSV_FILE_NAME_MIN, str):
                 exit("Data_filename_minute must be a string with .CSV extension.")
-        size = config['Trade']['size']
-        size_type = config['Trade']['size_type']
-        fees = config['Broker']['fees']
-        fixed_fees = config['Broker']['fixed_fees']
-        slippage = config['Slippage']
-        init_cash = config['Initial_cash']
+        SIZE = config['Trade']['SIZE']
+        SIZE_TYPE = config['Trade']['SIZE_TYPE']
+        FEES = config['Broker']['FEES']
+        FIXED_FEES = config['Broker']['FIXED_FEES']
+        SLIPPAGE = config['Slippage']
+        INIT_CASH = config['Initial_cash']
         RR = config['RR']
         SL = config['SL']
         TP = config['TP']
+        START_TR_TIME = config['Trading_time']['Start_time']
+        END_TR_TIME = config['Trading_time']['End_time']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
     if CSV_FILE_NAME == None or CSV_FILE_NAME.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(CSV_FILE_NAME, str):
         exit("Data_filename_hour must be a string with .CSV extension.")
-    if size == None or size <= 0 or not isinstance(size, (int, float)):
-        exit("Trade size must be a positive number.")
-    if size_type == None or size_type not in ['amount', 'percent', 'value']:
-        exit("Trade size_type must be either 'amount' 'percent' or 'value'.")
-    if fees == None or not isinstance(fees, (int, float)) or not (0 <= fees <= 100):
-        exit("Broker fees must be between 0 and 100.")
-    if fixed_fees == None or not isinstance(fixed_fees, (int, float)) or fixed_fees < 0:
-        exit("Broker fixed_fees must be a non-negative number.")
-    if slippage == None or slippage < 0 or not isinstance(slippage, (int, float)):
+    if SIZE == None or SIZE <= 0 or not isinstance(SIZE, (int, float)):
+        exit("Trade SIZE must be a positive number.")
+    if SIZE_TYPE == None or SIZE_TYPE not in ['amount', 'percent', 'value']:
+        exit("Trade SIZE_TYPE must be either 'amount' 'percent' or 'value'.")
+    if FEES == None or not isinstance(FEES, (int, float)) or not (0 <= FEES <= 100):
+        exit("Broker FEES must be between 0 and 100.")
+    if FIXED_FEES == None or not isinstance(FIXED_FEES, (int, float)) or FIXED_FEES < 0:
+        exit("Broker FIXED_FEES must be a non-negative number.")
+    if SLIPPAGE == None or SLIPPAGE < 0 or not isinstance(SLIPPAGE, (int, float)):
         exit("Slippage must be a non-negative number.")
-    if init_cash == None or init_cash < 0 or not isinstance(slippage, (int, float)):
+    if INIT_CASH == None or INIT_CASH < 0 or not isinstance(SLIPPAGE, (int, float)):
         exit("Initial_cash must be a non-negative number.")
     if RR == None or RR <= 0 or not isinstance(RR, (int, float)):
         exit("RR must be a positive number.")
@@ -46,6 +48,10 @@ def check_config(config, flag):
         exit("SL must be a positive number.")
     if TP == None or TP <= 0 or not isinstance(TP, (int, float)):
         exit("TP must be a positive number.")
+    if not isinstance(START_TR_TIME, str) or not isinstance(END_TR_TIME, str):
+        exit("TRADING TIME must be a string.")
+    if START_TR_TIME.count(':') != 1 or END_TR_TIME.count(':') != 1:
+        exit("TRADING TIME must be in 'hour:minute' format.")
 
 def check_if_csv_file_exist(config, data_file_name):
     if os.path.exists(config[data_file_name]):
@@ -97,7 +103,6 @@ def make_backtest_hour():
     df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['TP'])) #long
 
     index_arr_hour = df_hour.index.to_numpy()
-    open_arr_hour = df_hour['Open'].to_numpy()
     close_arr_hour = df_hour['Close'].to_numpy()
     bull_entry_arr_hour = df_hour['Bull Entry'].to_numpy()
     bear_entry_arr_hour = df_hour['Bear Entry'].to_numpy()
@@ -158,12 +163,12 @@ def make_backtest_hour():
     price = price_arr_hour,
     open = df_hour["Open"],
     close = df_hour["Close"],
-    size = config['Trade']['size'],
-    size_type = config['Trade']['size_type'],
-    fees = config['Broker']['fees'],
-    fixed_fees = config['Broker']['fixed_fees'],
-    slippage = config['Slippage'],
-    init_cash = config['Initial_cash'],
+    SIZE = config['Trade']['SIZE'],
+    SIZE_TYPE = config['Trade']['SIZE_TYPE'],
+    FEES = config['Broker']['FEES'],
+    FIXED_FEES = config['Broker']['FIXED_FEES'],
+    SLIPPAGE = config['Slippage'],
+    INIT_CASH = config['Initial_cash'],
     freq = '1h'
     )
 

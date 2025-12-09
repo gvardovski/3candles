@@ -23,7 +23,13 @@ Initial_cash: 50000
 RR: 1
 
 # Stop Loss in percent. Depends on the RR. 1 is 100% of RR
-SL: 0.5
+SL: 0.1
 
 # Take Profit in percent. Depends on the RR. 1 is 100% of RR
 TP: 1
+
+# Timeframe to open trades 'hour:minute'
+# Only for backtesting on minute candles
+Trading_time:
+  Start_time: '8:30'
+  End_time: '16:45'
