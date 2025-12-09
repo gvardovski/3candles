@@ -26,6 +26,8 @@ def check_config(config, flag):
         TP = config['TP']
         START_TR_TIME = config['Trading_time']['Start_time']
         END_TR_TIME = config['Trading_time']['End_time']
+        BACK_TEST_START = config['Backtesting_dates']['start']
+        BACK_TEST_END = config['Backtesting_dates']['end']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
     if CSV_FILE_NAME == None or CSV_FILE_NAME.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(CSV_FILE_NAME, str):
@@ -52,6 +54,8 @@ def check_config(config, flag):
         exit("TRADING TIME must be a string.")
     if START_TR_TIME.count(':') != 1 or END_TR_TIME.count(':') != 1:
         exit("TRADING TIME must be in 'hour:minute' format.")
+    if not isinstance(BACK_TEST_START, str) or not isinstance(BACK_TEST_END, str):
+        exit("BACKTESTING TIME must be a string.")
 
 def check_if_csv_file_exist(config, data_file_name):
     if os.path.exists(config[data_file_name]):
@@ -84,6 +88,7 @@ def make_backtest_hour():
     df_hour = pd.read_csv(config['Data_filename_hour'])
     df_hour = df_hour.set_index('Time')
     df_hour.index = pd.to_datetime(df_hour.index)
+    df_hour = df_hour[config['Backtesting_dates']['start']:config['Backtesting_dates']['end']]
     
     df_hour = df_hour.drop(columns=['Volume', 'High', 'Low'])
     df_hour['Dir'] = 0

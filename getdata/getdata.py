@@ -28,6 +28,7 @@ def check_if_config_file_exist(path, flag):
                         "# Time frequency of the data 'minute', 'hour', 'day', 'week'\nFrequency: hour")
                     else:
                         msg = ("# Path to the data files *.CSV\nData_filename_hour: ???.csv\nData_filename_minute: ???.csv\n\n" +
+                        "# Timeframe for backtesting 'year-month-day'\nBacktesting_dates:\n  start: '2020-01-01'\n  end: '2020-12-31'\n\n" +
                         "# size type: 'value' 'amount' 'percent'\nTrade:\n  size: 1\n  size_type: amount\n\n" +
                         "# Fees for one amount of trade in percent\n# Fixed fees for one trade in currency units\nBroker:\n  fees: 0.0003\n  fixed_fees: 0\n\n" +
                         "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n\n" +

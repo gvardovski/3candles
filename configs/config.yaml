@@ -2,6 +2,11 @@
 Data_filename_hour: data/OANDA:EURUSD_hour.CSV
 Data_filename_minute: data/OANDA:EURUSD_minute.CSV
 
+# Timeframe for backtesting 'year-month-day'
+Backtesting_dates:
+  start: '2025-01-01'
+  end: '2025-12-01'
+
 # size type: 'value' 'amount' 'percent'
 Trade:
   size: 0.3

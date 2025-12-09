@@ -26,10 +26,12 @@ def make_backtest_minute():
     df_hour = pd.read_csv(config['Data_filename_hour'])
     df_hour = df_hour.set_index('Time')
     df_hour.index = pd.to_datetime(df_hour.index)
+    df_hour = df_hour[config['Backtesting_dates']['start']:config['Backtesting_dates']['end']]
 
     df_min = pd.read_csv(config['Data_filename_minute'])
     df_min = df_min.set_index('Time')
     df_min.index = pd.to_datetime(df_min.index)
+    df_min = df_min[config['Backtesting_dates']['start']:config['Backtesting_dates']['end']]
 
     df_hour = df_hour.drop(columns=['Volume', 'High', 'Low'])
     df_hour['Dir'] = 0
