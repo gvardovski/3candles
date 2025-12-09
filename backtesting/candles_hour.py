@@ -168,12 +168,12 @@ def make_backtest_hour():
     price = price_arr_hour,
     open = df_hour["Open"],
     close = df_hour["Close"],
-    SIZE = config['Trade']['SIZE'],
-    SIZE_TYPE = config['Trade']['SIZE_TYPE'],
-    FEES = config['Broker']['FEES'],
-    FIXED_FEES = config['Broker']['FIXED_FEES'],
-    SLIPPAGE = config['Slippage'],
-    INIT_CASH = config['Initial_cash'],
+    size = config['Trade']['size'],
+    size_type = config['Trade']['size_type'],
+    fees = config['Broker']['fees'],
+    fixed_fees = config['Broker']['fixed_fees'],
+    slippage = config['Slippage'],
+    init_cash = config['Initial_cash'],
     freq = '1h'
     )
 
