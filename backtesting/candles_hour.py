@@ -22,8 +22,8 @@ def check_config(config, flag):
         SLIPPAGE = config['Slippage']
         INIT_CASH = config['Initial_cash']
         RR = config['RR']
-        SL = config['SL']
-        TP = config['TP']
+        SL = config['SL']['start']
+        TP = config['TP']['start']
         START_TR_TIME = config['Trading_time']['Start_time']
         END_TR_TIME = config['Trading_time']['End_time']
         BACK_TEST_START = config['Backtesting_dates']['start']
@@ -101,11 +101,11 @@ def make_backtest_hour():
                        (df_hour['Close'].shift(2) > df_hour['Open']))
     df_hour['Bear Entry'] = bear_entry_mask
 
-    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['SL'])) #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] - ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['SL'])) #long
+    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['SL']['start'])) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] - ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['SL']['start'])) #long
     
-    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['TP'])) #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['TP'])) #long
+    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['TP']['start'])) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['TP']['start'])) #long
 
     index_arr_hour = df_hour.index.to_numpy()
     close_arr_hour = df_hour['Close'].to_numpy()

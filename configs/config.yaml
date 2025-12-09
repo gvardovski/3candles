@@ -28,12 +28,14 @@ Initial_cash: 50000
 RR: 1
 
 # Stop Loss in percent. Depends on the RR. 1 is 100% of RR
+# If you dont need optimization use only 'start'
 SL:
   start: 0.1
   end: 0.5
   step: 0.1
 
 # Take Profit in percent. Depends on the RR. 1 is 100% of RR
+# If you dont need optimization use only 'start'
 TP:
   start: 1
   end: 1.5

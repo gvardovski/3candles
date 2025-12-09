@@ -45,8 +45,8 @@ def create_heatmap(results_df, metric_name, output_dir='data/', figsize=(30, 30)
             cbar_kws={'label': metric_name}
         )
         plt.title(f"{metric_name} Heatmap")
-        plt.xlabel("WICK_RATIO")
-        plt.ylabel("OP_WICK_RATIO")
+        plt.xlabel("SL")
+        plt.ylabel("TP")
         plt.tight_layout()
         
         os.makedirs(output_dir, exist_ok=True)

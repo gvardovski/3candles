@@ -11,5 +11,5 @@ Data info:
   Exchange: OANDA
   Token: EURUSD
 
-# Time frequency of the data 'minute', 'hour', 'day', 'week'
-Frequency: hour
+# Time frequency of the data 'minute', 'hour'
+Frequency: minute

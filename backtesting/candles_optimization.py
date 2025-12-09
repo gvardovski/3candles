@@ -71,6 +71,25 @@ def check_config(config, flag):
     if not isinstance(BACK_TEST_START, str) or not isinstance(BACK_TEST_END, str):
         exit("BACKTESTING TIME must be a string.")
 
+def process_data(df_hour: pd.DataFrame, df_min: pd.DataFrame,  config: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
+    df_hour = df_hour.set_index('Time')
+    df_hour.index = pd.to_datetime(df_hour.index)
+    df_hour = df_hour[config['Backtesting_dates']['start']:config['Backtesting_dates']['end']]
+
+    df_min = df_min.set_index('Time')
+    df_min.index = pd.to_datetime(df_min.index)
+    df_min = df_min[config['Backtesting_dates']['start']:config['Backtesting_dates']['end']]
+
+    df_hour.loc[df_hour['Close'] > df_hour['Open'], 'Dir'] = 1
+    bull_entry_mask = ((df_hour['Dir'] == 1) & (df_hour['Dir'].shift(1) == 1) & (df_hour['Dir'].shift(2) == 1) & #short
+                        (df_hour['Close'].shift(2) < df_hour['Open']))
+    df_hour['Bull Entry'] = bull_entry_mask
+    bear_entry_mask = ((df_hour['Dir'] == 0) & (df_hour['Dir'].shift(1) == 0) & (df_hour['Dir'].shift(2) == 0) & #long
+                        (df_hour['Close'].shift(2) > df_hour['Open']))
+    df_hour['Bear Entry'] = bear_entry_mask
+
+    return df_hour, df_min
+
 def backtest_strategy(df_hour: pd.DataFrame, df_min: pd.DataFrame, config: dict) -> vbt.Portfolio:
 
     df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['SL']['start'])) #short
@@ -170,26 +189,7 @@ def backtest_strategy(df_hour: pd.DataFrame, df_min: pd.DataFrame, config: dict)
 
     return pf
 
-def process_data(df_hour: pd.DataFrame, df_min: pd.DataFrame,  config: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
-    df_hour = df_hour.set_index('Time')
-    df_hour.index = pd.to_datetime(df_hour.index)
-    df_hour = df_hour[config['Backtesting_dates']['start']:config['Backtesting_dates']['end']]
-
-    df_min = df_min.set_index('Time')
-    df_min.index = pd.to_datetime(df_min.index)
-    df_min = df_min[config['Backtesting_dates']['start']:config['Backtesting_dates']['end']]
-
-    df_hour.loc[df_hour['Close'] > df_hour['Open'], 'Dir'] = 1
-    bull_entry_mask = ((df_hour['Dir'] == 1) & (df_hour['Dir'].shift(1) == 1) & (df_hour['Dir'].shift(2) == 1) & #short
-                        (df_hour['Close'].shift(2) < df_hour['Open']))
-    df_hour['Bull Entry'] = bull_entry_mask
-    bear_entry_mask = ((df_hour['Dir'] == 0) & (df_hour['Dir'].shift(1) == 0) & (df_hour['Dir'].shift(2) == 0) & #long
-                        (df_hour['Close'].shift(2) > df_hour['Open']))
-    df_hour['Bear Entry'] = bear_entry_mask
-
-    return df_hour, df_min
-
-if __name__ == "__main__":
+def make_backtest_minute_optimization():
 
     check_if_env_file_exist()
     load_dotenv()
