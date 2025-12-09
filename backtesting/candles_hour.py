@@ -8,43 +8,51 @@ import pandas as pd
 import vectorbt as vbt
 import numpy as np
 
-def check_config(config):
+def check_config(config, flag):
     try:
-        csv_file_name = config['Data_filename_hour']
+        CSV_FILE_NAME = config['Data_filename_hour']
+        if flag == 2:
+            csv_file_name_min = config['Data_filename_minute']
+            if csv_file_name_min == None or csv_file_name_min.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(csv_file_name_min, str):
+                exit("Data_filename_minute must be a string with .CSV extension.")
         size = config['Trade']['size']
         size_type = config['Trade']['size_type']
         fees = config['Broker']['fees']
         fixed_fees = config['Broker']['fixed_fees']
         slippage = config['Slippage']
         init_cash = config['Initial_cash']
-        rr = config['RR']
+        RR = config['RR']
+        SL = config['SL']
+        TP = config['TP']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
-    if csv_file_name.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(csv_file_name, str):
+    if CSV_FILE_NAME == None or CSV_FILE_NAME.split('.')[-1] not in ['csv', 'CSV'] or not isinstance(CSV_FILE_NAME, str):
         exit("Data_filename_hour must be a string with .CSV extension.")
-    if size <= 0 or not isinstance(size, (int, float)):
+    if size == None or size <= 0 or not isinstance(size, (int, float)):
         exit("Trade size must be a positive number.")
-    if size_type not in ['amount', 'percent', 'value']:
+    if size_type == None or size_type not in ['amount', 'percent', 'value']:
         exit("Trade size_type must be either 'amount' 'percent' or 'value'.")
-    if rr <= 0 or not isinstance(rr, (int, float)):
-        exit("RR must be a positive number.")
-    if not isinstance(fees, (int, float)) or not isinstance(fixed_fees, (int, float)):
-        exit("Broker fees must be a number.")
-    if not (0 <= fees <= 100):
+    if fees == None or not isinstance(fees, (int, float)) or not (0 <= fees <= 100):
         exit("Broker fees must be between 0 and 100.")
-    if fixed_fees < 0:
+    if fixed_fees == None or not isinstance(fixed_fees, (int, float)) or fixed_fees < 0:
         exit("Broker fixed_fees must be a non-negative number.")
-    if slippage < 0 or not isinstance(slippage, (int, float)):
+    if slippage == None or slippage < 0 or not isinstance(slippage, (int, float)):
         exit("Slippage must be a non-negative number.")
-    if init_cash < 0 or not isinstance(slippage, (int, float)):
+    if init_cash == None or init_cash < 0 or not isinstance(slippage, (int, float)):
         exit("Initial_cash must be a non-negative number.")
+    if RR == None or RR <= 0 or not isinstance(RR, (int, float)):
+        exit("RR must be a positive number.")
+    if SL == None or SL <= 0 or not isinstance(SL, (int, float)):
+        exit("SL must be a positive number.")
+    if TP == None or TP <= 0 or not isinstance(TP, (int, float)):
+        exit("TP must be a positive number.")
 
-def check_if_csv_file_exist(config):
-    if os.path.exists(config['Data_filename_hour']):
-        print("Found your Data file!")
+def check_if_csv_file_exist(config, data_file_name):
+    if os.path.exists(config[data_file_name]):
+        print(f"Found your Data file '{config[data_file_name]}'!")
     else:
-        print(f"Your CSV file '{config['Data_filename_hour']}' doesn't exist!\nCSV file '{config['Data_filename_hour']}' will be created automatically!")
-        config['Data_filename_hour'] = make_csv()
+        print(f"Your CSV file '{config[data_file_name]}' doesn't exist!\nCSV file will be created automatically!")
+        config[data_file_name] = make_csv(data_file_name)
     return config
 
 def check_if_env_file_exist():
@@ -64,8 +72,8 @@ def make_backtest_hour():
 
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
-        check_config(config)
-        config = check_if_csv_file_exist(config)
+        check_config(config, 1)
+        config = check_if_csv_file_exist(config, 'Data_filename_hour')
 
     df_hour = pd.read_csv(config['Data_filename_hour'])
     df_hour = df_hour.set_index('Time')
@@ -82,11 +90,11 @@ def make_backtest_hour():
                        (df_hour['Close'].shift(2) > df_hour['Open']))
     df_hour['Bear Entry'] = bear_entry_mask
 
-    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * 0.5)) #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] - ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * 0.5))#long
+    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['SL'])) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] - ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['SL'])) #long
     
-    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * config['RR']) #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * config['RR'])#long
+    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['TP'])) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['TP'])) #long
 
     index_arr_hour = df_hour.index.to_numpy()
     open_arr_hour = df_hour['Open'].to_numpy()
@@ -160,7 +168,6 @@ def make_backtest_hour():
     )
 
     file_path = config['Data_filename_hour'].split('.')[0]
-    pf.stats().to_csv(f"{file_path}_stats.CSV")
-    print(f"CSV file with statistics '{f"{file_path}_stats.CSV"}' was created!")
+    save_backtesting_results_to_pdf(pf, file_path)
     pf.trades.records_readable.to_csv(f"{file_path}_trades.CSV")
     print(f"CSV file with trades '{f"{file_path}_trades.CSV"}' was created!")

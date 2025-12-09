@@ -13,11 +13,17 @@ Broker:
   fees: 0
   fixed_fees: 0
 
-# Risk to Reward ratio
-RR: 2
-
 # Slippage in percent
 Slippage: 0
 
 # Start cash value
 Initial_cash: 50000
+
+# Risk to Reward ratio
+RR: 1
+
+# Stop Loss in percent. Depends on the RR. 1 is 100% of RR
+SL: 0.5
+
+# Take Profit in percent. Depends on the RR. 1 is 100% of RR
+TP: 1

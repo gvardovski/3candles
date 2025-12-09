@@ -3,14 +3,12 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 
-def save_backtesting_results_to_pdf(pf):
-    output_dir = "data/output/"
-    os.makedirs(output_dir, exist_ok=True)
+def save_backtesting_results_to_pdf(pf, file_path):
+    os.makedirs("data/", exist_ok=True)
 
-    stats = pf.stats()
-    stats_df = stats.to_frame()
+    stats_df = pf.stats().to_frame()
 
-    with PdfPages(f"{output_dir}/portfolio_report.pdf") as pdf:
+    with PdfPages(f"{file_path}_stats.pdf") as pdf:
         fig, ax = plt.subplots(figsize=(8.5, len(stats_df) * 0.4))
         ax.axis("off")
         table = ax.table(
@@ -25,3 +23,5 @@ def save_backtesting_results_to_pdf(pf):
         table.scale(1, 1.5)
         pdf.savefig(fig, bbox_inches="tight")
         plt.close()
+
+    print(f"CSV file with statistics '{f"{file_path}_stats.pdf"}' was created!")

@@ -1,5 +1,6 @@
 from getdata.getdata import check_if_config_file_exist, check_env_varailable
 from backtesting.candles_hour import check_if_env_file_exist, check_config, check_if_csv_file_exist
+from src.savetopdf import save_backtesting_results_to_pdf
 from dotenv import load_dotenv
 from typing import Optional
 import os
@@ -7,29 +8,6 @@ import yaml
 import pandas as pd
 import vectorbt as vbt
 import numpy as np
-
-def save_backtesting_results(pf):
-    output_dir = "data/output/"
-    os.makedirs(output_dir, exist_ok=True)
-
-    stats = pf.stats()
-    stats_df = stats.to_frame()
-
-    with PdfPages(f"{output_dir}/portfolio_report.pdf") as pdf:
-        fig, ax = plt.subplots(figsize=(8.5, len(stats_df) * 0.4))
-        ax.axis("off")
-        table = ax.table(
-            cellText=stats_df.values,
-            colLabels=stats_df.columns,
-            rowLabels=stats_df.index,
-            cellLoc="center",
-            loc="center",
-        )
-        table.auto_set_font_size(False)
-        table.set_fontsize(10)
-        table.scale(1, 1.5)
-        pdf.savefig(fig, bbox_inches="tight")
-        plt.close()
 
 def make_backtest_minute():
 
@@ -41,9 +19,10 @@ def make_backtest_minute():
 
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
-        check_config(config)
-        config = check_if_csv_file_exist(config)
-
+        check_config(config, 2)
+        config = check_if_csv_file_exist(config, 'Data_filename_hour')
+        config = check_if_csv_file_exist(config, 'Data_filename_minute')
+        
     df_hour = pd.read_csv(config['Data_filename_hour'])
     df_hour = df_hour.set_index('Time')
     df_hour.index = pd.to_datetime(df_hour.index)
@@ -63,11 +42,11 @@ def make_backtest_minute():
                         (df_hour['Close'].shift(2) > df_hour['Open']))
     df_hour['Bear Entry'] = bear_entry_mask
 
-    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * 0.5)) #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] - ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * 0.5))#long
-
-    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * config['RR']) #short
-    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * config['RR']) #long
+    df_hour.loc[df_hour['Bull Entry'] == True, 'SL'] = df_hour['Close'] + ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['SL'])) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'SL'] = df_hour['Close'] - ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['SL'])) #long
+    
+    df_hour.loc[df_hour['Bull Entry'] == True, 'TP'] = df_hour['Close'] - ((df_hour['Close'] - df_hour['Close'].shift(2)) * (config['RR'] * config['TP'])) #short
+    df_hour.loc[df_hour['Bear Entry'] == True, 'TP'] = df_hour['Close'] + ((df_hour['Close'].shift(2) - df_hour['Close']) * (config['RR'] * config['TP'])) #long
 
     df_min['Bull Entry'] = df_hour['Bull Entry'].shift(1).reindex(df_min.index, method='ffill')
     df_min['Bear Entry'] = df_hour['Bear Entry'].shift(1).reindex(df_min.index, method='ffill')
@@ -77,7 +56,6 @@ def make_backtest_minute():
     df_min.dropna(inplace=True)
 
     index_arr_min = df_min.index.to_numpy()
-    open_arr_min = df_min['Open'].to_numpy()
     close_arr_min = df_min['Close'].to_numpy()
     bull_entry_arr_min = df_min['Bull Entry'].to_numpy()
     bear_entry_arr_min = df_min['Bear Entry'].to_numpy()
@@ -153,7 +131,6 @@ def make_backtest_minute():
     )
 
     file_path = config['Data_filename_minute'].split('.')[0]
-    pf.stats().to_csv(f"{file_path}_stats.CSV")
-    print(f"CSV file with statistics '{f"{file_path}_stats.CSV"}' was created!")
+    save_backtesting_results_to_pdf(pf, file_path)
     pf.trades.records_readable.to_csv(f"{file_path}_trades.CSV")
     print(f"CSV file with trades '{f"{file_path}_trades.CSV"}' was created!")

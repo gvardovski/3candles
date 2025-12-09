@@ -24,13 +24,15 @@ def check_if_config_file_exist(path, flag):
                     if flag == 1:
                         msg = ("# Time interval of data\nTime interval:\n" +
                         "  Start_year: 2020\n  Start_month: 1\n  End_year: 2025\n  End_month: 12\n\n" +
-                        "# Place from which take data\n# Name of token which data you need\nData info:\n  Exchange: OANDA\n  Token: EURUSD\n\n" +
+                        "# Place from which take data\n# Name of TOKEN which data you need\nData info:\n  Exchange: OANDA\n  Token: EURUSD\n\n" +
                         "# Time frequency of the data 'minute', 'hour', 'day', 'week'\nFrequency: hour")
                     else:
                         msg = ("# Path to the data files *.CSV\nData_filename_hour: ???.csv\nData_filename_minute: ???.csv\n\n" +
                         "# size type: 'value' 'amount' 'percent'\nTrade:\n  size: 1\n  size_type: amount\n\n" +
                         "# Fees for one amount of trade in percent\n# Fixed fees for one trade in currency units\nBroker:\n  fees: 0.0003\n  fixed_fees: 0\n\n" +
-                        "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n")
+                        "# Slippage in percent\nSlippage: 0.02\n\n# Start cash value\nInitial_cash: 55000\n\n" +
+                        "# Risk to Reward ratio\nRR: 1\n\n# Stop Loss in percent. Depends on the RR. 1 is 100% of RR\nSL: 0.5\n\n" +
+                        "# Take Profit in percent. Depends on the RR. 1 is 100% of RR\nTP: 1")
                     file.write(msg)
             else:
                 type_choise()
@@ -38,56 +40,56 @@ def check_if_config_file_exist(path, flag):
 
 def check_dataconfig(data_config):
     try:
-        start_year = data_config['Time interval']['Start_year']
-        start_month = data_config['Time interval']['Start_month']
-        end_year = data_config['Time interval']['End_year']
-        end_month = data_config['Time interval']['End_month']
-        exchange = data_config['Data info']['Exchange']
-        token = data_config['Data info']['Token']
-        freq = data_config['Frequency']
+        START_YEAR = data_config['Time interval']['Start_year']
+        START_MONTH = data_config['Time interval']['Start_month']
+        END_YEAR = data_config['Time interval']['End_year']
+        END_MONTH = data_config['Time interval']['End_month']
+        EXCHANGE = data_config['Data info']['Exchange']
+        TOKEN = data_config['Data info']['Token']
+        FREQ = data_config['Frequency']
     except KeyError as e:
         exit(f"Your Configuration file is missing a key: {e}\nPlease, check your configuration file.")
-    if not isinstance(start_year, int) or not isinstance(start_month, int) or not isinstance(end_year, int) or not isinstance(end_month, int):
+    if not isinstance(START_YEAR, int) or not isinstance(START_MONTH, int) or not isinstance(END_YEAR, int) or not isinstance(END_MONTH, int):
         exit("DATA must be integer.")
     year = datetime.now().year
-    if (start_year > year or start_year < 2000) or (end_year > year or end_year < 2000):
+    if (START_YEAR > year or START_YEAR < 2000) or (END_YEAR > year or END_YEAR < 2000):
         exit(f"YEAR must be in interval 2000 - {year}.")
-    if start_year > end_year:
+    if START_YEAR > END_YEAR:
         exit("START YEAR is greater then END YEAR.")
-    if (start_month > 12 or start_month < 1) or (end_month > 12 or end_month < 1):
+    if (START_MONTH > 12 or START_MONTH < 1) or (END_MONTH > 12 or END_MONTH < 1):
         exit("MONTH must be in interval 1 - 12.")
-    if start_month > end_month:
+    if START_MONTH > END_MONTH:
         exit("START MONTH is greater then END MONTH.")    
-    if not isinstance(exchange, str) or not isinstance(token, str):
+    if not isinstance(EXCHANGE, str) or not isinstance(TOKEN, str):
         exit("DATA INFO must be a string.")
-    if freq not in ['second', 'minute', 'hour', 'day', 'week', 'month', 'year']:
+    if FREQ not in ['second', 'minute', 'hour', 'day', 'week', 'month', 'year']:
         exit("Frequency must be a string like ('second', 'minute', 'hour').")
 
 def take_months(data_config):
     months = []
-    start_year = data_config['Time interval']['Start_year']
-    start_month = data_config['Time interval']['Start_month']
-    end_year = data_config['Time interval']['End_year']
-    end_month = data_config['Time interval']['End_month']
+    START_YEAR = data_config['Time interval']['Start_year']
+    START_MONTH = data_config['Time interval']['Start_month']
+    END_YEAR = data_config['Time interval']['End_year']
+    END_MONTH = data_config['Time interval']['End_month']
 
-    while start_year <= end_year and start_month <= end_month:
-        months.append(f"{start_year}-{start_month:02d}")
-        start_month += 1
-        if start_month > 12:
-            start_month = 1
-            start_year += 1
+    while START_YEAR <= END_YEAR and START_MONTH <= END_MONTH:
+        months.append(f"{START_YEAR}-{START_MONTH:02d}")
+        START_MONTH += 1
+        if START_MONTH > 12:
+            START_MONTH = 1
+            START_YEAR += 1
     return months
 
 def get_data_from_api(data_config):
     months = take_months(data_config)
     df = None
 
-    exchange = data_config['Data info']['Exchange']
-    token = data_config['Data info']['Token']
-    freq = data_config['Frequency']
+    EXCHANGE = data_config['Data info']['Exchange']
+    TOKEN = data_config['Data info']['Token']
+    FREQ = data_config['Frequency']
     print("Start loading data!")
     for month in tqdm(months):
-        url = f"https://api.insightsentry.com/v3/symbols/{exchange}:{token}/history?bar_interval=1&bar_type={freq}&extended=false&badj=false&dadj=false&start_ym={month}"
+        url = f"https://api.insightsentry.com/v3/symbols/{EXCHANGE}:{TOKEN}/history?bar_interval=1&bar_type={FREQ}&extended=false&badj=false&dadj=false&start_ym={month}"
 
         headers = {
             "Authorization" : f"{check_env_varailable('IS_JWT_USER')} {check_env_varailable('IS_JWT')}",
@@ -122,7 +124,7 @@ def check_env_varailable(var_name):
     else:
         return os.getenv(var_name)
 
-def make_csv():
+def make_csv(data_file_name=None):
 
     load_dotenv()  
 
@@ -133,6 +135,8 @@ def make_csv():
         data_config = yaml.safe_load(file)
         check_dataconfig(data_config)
 
+    if data_file_name == 'Data_filename_minute':
+        data_config['Frequency'] = 'minute'
     df = get_data_from_api(data_config)
 
     df["time"] = pd.to_datetime(df["time"], unit="s", utc=True)
